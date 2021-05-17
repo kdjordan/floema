@@ -1,9 +1,11 @@
 const path = require('path')
 const webpack = require('webpack')
 
+const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const CopywebpackPlugin = require('copy-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const ImageMinimizerPlugin = require('image-minimizer-webpack-plugin')
+const TerserPlugin = require('terser-webpack-plugin')
 
 const IS_DEVELOPMENT = process.env.NODE_ENV === 'dev'
 
@@ -52,7 +54,8 @@ module.exports = {
           ['optipng', { optimizationLevel: 8 }]
         ]
       }
-    })
+    }),
+    new CleanWebpackPlugin()
   ],
 
   module: {
@@ -111,5 +114,9 @@ module.exports = {
         exclude: /node_modules/
       }
     ]
+  },
+  optimization: {
+    minimize: true,
+    minimizer: [new TerserPlugin()]
   }
 }
