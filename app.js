@@ -2,7 +2,7 @@ const express = require('express')
 require('dotenv').config()
 const app = express()
 const path = require('path')
-const port = 3000
+const port = 9000
 
 const Prismic = require('@prismicio/client')
 const PrismicDOM = require('prismic-dom')
@@ -49,9 +49,10 @@ app.get('/about', async (req, res) => {
       Prismic.Predicates.any('document.type', ['about', 'meta'])).then(response => {
       const { results } = response
       const [about, meta] = results
-      console.log(meta)
-      // console.log(meta, about)
-      // response is the response object. Render your views here.
+      console.log(about.data.body)
+      about.data.gallery.forEach(media => {
+        console.log(media)
+      })
       res.render('pages/about', {
         about,
         meta
