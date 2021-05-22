@@ -1,8 +1,9 @@
 const express = require('express')
+const errorhandler = require('errorhandler')
 require('dotenv').config()
 const app = express()
 const path = require('path')
-const port = 9000
+const port = 3000
 
 const Prismic = require('@prismicio/client')
 const PrismicDOM = require('prismic-dom')
@@ -26,6 +27,8 @@ const handleLinkResolver = doc => {
   return '/'
 }
 
+app.use(errorhandler())
+
 app.use((req, res, next) => {
   res.locals.ctx = {
     endpoint: process.env.PRISMIC_ENDPOINT,
@@ -44,25 +47,26 @@ app.get('/', (req, res) => {
 })
 
 app.get('/about', async (req, res) => {
-  initApi(req).then(api => {
-    api.query(
-      Prismic.Predicates.any('document.type', ['about', 'meta'])).then(response => {
-      const { results } = response
-      const [about, meta] = results
-      console.log(about.data.body)
-      about.data.gallery.forEach(media => {
-        console.log(media)
-      })
-      res.render('pages/about', {
-        about,
-        meta
-      })
-    })
+  const api = await initApi(req)
+  const about = await api.getSingle('about')
+  const meta = await api.getSingle('meta')
+  res.render('pages/about', {
+    about,
+    meta
   })
 })
 
-app.get('/details/:uid', (req, res) => {
-  res.render('pages/detail')
+app.get('/details/:uid', async (req, res) => {
+  const api = await initApi(req)
+  const meta = await api.getSingle('meta')
+  const product = await api.getByUID('product', req.params.uid, {
+    fetchLinks: 'collection.title'
+  })
+  console.log(product.data)
+  res.render('pages/details', {
+    meta,
+    product
+  })
 })
 
 app.get('/collections', (req, res) => {
